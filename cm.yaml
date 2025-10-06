@@ -1,0 +1,49 @@
+# ConfigMap with HTML content
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hello-world-html
+  namespace: argo-dev-app1
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Hello K8s World!</title>
+        <style>
+            body { 
+                font-family: Arial, sans-serif; 
+                text-align: center; 
+                margin-top: 100px;
+                background-color: #f0f8ff;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                border-radius: 10px;
+                background-color: white;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+            h1 { color: #2c3e50; }
+            .info { 
+                background-color: #ecf0f1; 
+                padding: 15px; 
+                border-radius: 5px; 
+                margin: 20px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Hello Kubernetes World!</h1>
+            <p>Your nginx ingress is working correctly!</p>
+            <div class="info">
+                <p><strong>Namespace:</strong> hello-world</p>
+                <p><strong>Service:</strong> hello-world-service</p>
+                <p><strong>Test Status:</strong> SUCCESS</p>
+            </div>
+            <p>If you can see this page, your ingress controller is properly routing traffic to your pods.</p>
+        </div>
+    </body>
+    </html>
