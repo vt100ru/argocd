@@ -4,6 +4,8 @@ kind: ConfigMap
 metadata:
   name: hello-world-html
   namespace: argo-dev-app1
+  labels:
+    argo: app1
 data:
   index.html: |
     <!DOCTYPE html>

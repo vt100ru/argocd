@@ -4,6 +4,8 @@ kind: Service
 metadata:
   name: hello-world-service
   namespace: argo-dev-app1
+  labels:
+    argo: app1
 spec:
   selector:
     app: hello-world
