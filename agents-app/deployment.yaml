@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agents-app
+  namespace: agents-dev
+  labels:
+    app: agents-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: agents-app
+  template:
+    metadata:
+      labels:
+        app: agents-app
+    spec:
+      # Init container installs Python deps into /deps (emptyDir).
+      # The main container then uses PYTHONPATH=/deps to find them.
+      # This avoids needing a custom Docker image with pre-baked deps.
+      initContainers:
+        - name: install-deps
+          image: python:3.11-slim
+          command:
+            - pip
+            - install
+            - -r
+            - /code/requirements.txt
+            - --target
+            - /deps
+            - --quiet
+          volumeMounts:
+            - name: code
+              mountPath: /code
+              readOnly: true
+            - name: deps
+              mountPath: /deps
+
+      containers:
+        - name: app
+          image: python:3.11-slim
+          command:
+            - python
+            - -m
+            - uvicorn
+            - main:app
+            - --host
+            - "0.0.0.0"
+            - --port
+            - "8000"
+          workingDir: /code
+          env:
+            - name: PYTHONPATH
+              value: /deps
+            # Downward API: expose pod metadata as env vars
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          volumeMounts:
+            - name: code
+              mountPath: /code
+              readOnly: true
+            - name: deps
+              mountPath: /deps
+
+      volumes:
+        # App code from ConfigMap — update the ConfigMap to change the app
+        - name: code
+          configMap:
+            name: agents-app-code
+        # Shared emptyDir for pip-installed packages
+        - name: deps
+          emptyDir: {}

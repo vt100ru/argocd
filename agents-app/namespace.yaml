@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agents-dev
+  labels:
+    app: agents-app
+    managed-by: argocd
